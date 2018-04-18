@@ -1,4 +1,4 @@
-package org.bootcamp;
+package org.bootcamp.vehicle;
 
 public final class Car extends Vehicle { //final ca sa nu mai poata extinde nimeni clasa
     private String transmission = "manual";

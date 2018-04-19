@@ -7,6 +7,10 @@ public final class Car extends Vehicle { //final ca sa nu mai poata extinde nime
 
     }
 
+    public Car(int age, long numberOfMiles, boolean isDiesel) {
+        super(age, numberOfMiles, isDiesel);
+    }
+
     public Car(int age, long numberOfMiles, boolean isDiesel, String transmission) {
         super(age, numberOfMiles, isDiesel);
         this.transmission = transmission;

@@ -34,7 +34,7 @@ public final class VehicleInfoPlainFileDao implements VehicleInfoDao {
     @Override
     public List<VehicleInfo> getAllVehicles() {
         final File inputFile = new File(filePath);
-        List<VehicleInfo> vehicleInfos = new ArrayList<>(); 
+        List<VehicleInfo> vehicleInfos = new ArrayList<>();
 
         try {
             final InputStream inputStream = new FileInputStream(inputFile);

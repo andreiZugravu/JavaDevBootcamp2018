@@ -1,28 +1,17 @@
 package org.bootcamp;
 
 import org.bootcamp.calculator.InsurancePolicyCalculator;
+import org.bootcamp.dao.VehicleInfoPlainFileDao;
 import org.bootcamp.formula.Formula;
+import org.bootcamp.model.VehicleInfo;
 import org.bootcamp.vehicle.Bus;
 import org.bootcamp.vehicle.Car;
 import org.bootcamp.vehicle.Tipper;
 import org.bootcamp.vehicle.Vehicle;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.Scanner;
+import java.util.List;
 
 public class MainApp {
-
-    private static final String SEPARATOR = ";";
-
-    private static final int VEHICLE_TYPE = 1;
-    private static final int VEHICLE_AGE = 3;
-    private static final int VEHICLE_MILES = 4;
-    private static final int VEHICLE_IS_DIESEL = 5;
-    private static final int VEHICLE_ID = 0;
-    private static final int VEHICLE_FORMULA = 2;
 
     private static final InsurancePolicyCalculator calculator = InsurancePolicyCalculator.INSTANCE;
 
@@ -31,31 +20,26 @@ public class MainApp {
     public static void main(String[] args) {
 
         if(args.length >= 1) {
-            final File inputFile = new File(args[0]);
+            final VehicleInfoPlainFileDao vehicleInfoDao = new VehicleInfoPlainFileDao(args[0]);
 
-            try {
-                final InputStream inputStream = new FileInputStream(inputFile);
-                final Scanner scanner = new Scanner(inputStream);
+            final List<VehicleInfo> vehicleInfos = vehicleInfoDao.getAllVehicles();
 
-                while(scanner.hasNextLine()) {
-                    final String line = scanner.nextLine();
-                    final String[] tokens = line.split(SEPARATOR);
+            if (vehicleInfos.isEmpty()) {
+                System.err.println("No records found");
+                return;
+            }
+            else {
+                for (VehicleInfo vehicleInfo : vehicleInfos) {
+                    final Vehicle vehicle = getVehicle(vehicleInfo);
 
-                    final Vehicle vehicle = getVehicle(tokens[VEHICLE_TYPE], Integer.parseInt(tokens[VEHICLE_AGE]),
-                            Long.parseLong(tokens[VEHICLE_MILES]), Boolean.parseBoolean(tokens[VEHICLE_IS_DIESEL]));
+                    final Formula formula = Formula.valueOf(vehicleInfo.getVehicleTypeFormula());
 
-                    final Formula formula = Formula.valueOf(tokens[VEHICLE_FORMULA]); //wow
+                    final int totalCost = calculator.calculate(vehicle, formula);
 
-                    final String output = String.format(OUTPUT_FORMAT,
-                            tokens[VEHICLE_ID], calculator.calculate(vehicle, formula));
+                    final String output = String.format(OUTPUT_FORMAT, vehicleInfo.getId(), totalCost);
 
                     System.out.println(output);
                 }
-
-                scanner.close();
-
-            } catch(FileNotFoundException noFileFound) {
-                System.err.println(noFileFound.getMessage());
             }
         }
         else {
@@ -63,21 +47,21 @@ public class MainApp {
         }
     }
 
-    private static Vehicle getVehicle(String vehicleName, int age, long numberOfMiles, boolean isDiesel) {
+    private static Vehicle getVehicle(VehicleInfo vehicleInfo) {
         final String carClassName = Car.class.getSimpleName().toUpperCase(); //vine lower case by default, noi le avem upper in fisier
         final String busClassName = Bus.class.getSimpleName().toUpperCase();
         final String tipperClassName = Tipper.class.getSimpleName().toUpperCase();
 
-        if (vehicleName.equals(carClassName)) {
-            return new Car(age, numberOfMiles, isDiesel);
+        if (vehicleInfo.getVehicleTypeName().equals(carClassName)) {
+            return new Car(vehicleInfo.getAge(), vehicleInfo.getNumberOfMiles(), vehicleInfo.isDiesel());
         }
 
-        if (vehicleName.equals(busClassName)) {
-            return new Bus(age, numberOfMiles, isDiesel);
+        if (vehicleInfo.getVehicleTypeName().equals(busClassName)) {
+            return new Car(vehicleInfo.getAge(), vehicleInfo.getNumberOfMiles(), vehicleInfo.isDiesel());
         }
 
-        if(vehicleName.equals(tipperClassName)) {
-            return new Tipper(age, numberOfMiles, isDiesel);
+        if(vehicleInfo.getVehicleTypeName().equals(tipperClassName)) {
+            return new Car(vehicleInfo.getAge(), vehicleInfo.getNumberOfMiles(), vehicleInfo.isDiesel());
         }
 
         return null;
